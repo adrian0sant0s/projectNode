@@ -36,6 +36,18 @@ app.put("/users/:id", (request, response) => {
   return response.json(updateUser);
 });
 
+app.delete("/users/:id", (request, response) => {
+  const { id } = request.params;
+
+  const index = users.findIndex((user) => user.id === id);
+  if (index < 0) {
+    return response.status(404).json({ message: "user not found" });
+  }
+
+  users.splice(index, 1);
+  return response.json({ message: "user deleted" });
+});
+
 app.listen(3000, () => {
   console.log(`server started on port ${port}`);
 });

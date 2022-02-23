@@ -7,6 +7,19 @@ app.use(express.json());
 
 const users = [];
 
+const chekcUsers = (request, response, next) => {
+  const { id } = request.params;
+  const index = users.findIndex((user) => user.id === id);
+  if (index < 0) {
+    return response.status(404).json({ message: "user not found" });
+  }
+
+  request.userId = id;
+  request.userIndex = index;
+
+  next();
+};
+
 app.get("/users", (request, response) => {
   return response.json(users);
 });
@@ -21,28 +34,20 @@ app.post("/users", (request, response) => {
   return response.status(201).json(user);
 });
 
-app.put("/users/:id", (request, response) => {
-  const { id } = request.params;
+app.put("/users/:id", chekcUsers, (request, response) => {
   const { name, age } = request.body;
+  const id = request.userId;
+  const index = request.userIndex;
 
   const updateUser = { id, name, age };
-
-  const index = users.findIndex((user) => user.id === id);
-  if (index < 0) {
-    return response.status(404).json({ message: "user not found" });
-  }
 
   users[index] = updateUser;
   return response.json(updateUser);
 });
 
-app.delete("/users/:id", (request, response) => {
-  const { id } = request.params;
-
-  const index = users.findIndex((user) => user.id === id);
-  if (index < 0) {
-    return response.status(404).json({ message: "user not found" });
-  }
+app.delete("/users/:id", chekcUsers, (request, response) => {
+  const id = request.userId;
+  const index = request.userIndex;
 
   users.splice(index, 1);
   return response.json({ message: "user deleted" });
